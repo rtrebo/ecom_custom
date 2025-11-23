@@ -298,13 +298,17 @@ def _apply_customer_metadata(customer: ShopifyCustomer, shopify_customer: dict[s
 
 
 def _set_existing_fields(doctype: str, name: str, values: dict[str, Any], update_modified: bool = False) -> None:
-	"""Set only those fields that actually exist on the DocType."""
+	"""Set only those fields that exist on the DocType **and** as DB columns."""
 
 	if not values:
 		return
 
 	meta = frappe.get_meta(doctype)
-	valid_values = {field: val for field, val in values.items() if meta.has_field(field)}
+	valid_values = {
+		field: val
+		for field, val in values.items()
+		if meta.has_field(field) and frappe.db.has_column(doctype, field)
+	}
 
 	if not valid_values:
 		return
