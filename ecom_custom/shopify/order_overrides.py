@@ -132,7 +132,7 @@ def _apply_updates(sales_order: str, order: dict[str, Any]) -> None:
 		updates.update(payment_snapshot)
 
 	if updates:
-		frappe.db.set_value("Sales Order", sales_order, updates, update_modified=False)
+		_set_existing_fields("Sales Order", sales_order, updates)
 
 	_mark_order_fulfillment_status(sales_order, order)
 
@@ -228,7 +228,7 @@ def _mark_order_fulfillment_status(sales_order: str, order: dict[str, Any]) -> N
 			values["status"] = "To Deliver and Bill"
 
 	if values:
-		frappe.db.set_value("Sales Order", sales_order, values, update_modified=False)
+		_set_existing_fields("Sales Order", sales_order, values, update_modified=False)
 
 
 def _is_fulfilled(order: dict[str, Any]) -> bool:
@@ -295,6 +295,21 @@ def _apply_customer_metadata(customer: ShopifyCustomer, shopify_customer: dict[s
 		customer_doc.update(updates)
 		customer_doc.flags.ignore_mandatory = True
 		customer_doc.save(ignore_permissions=True)
+
+
+def _set_existing_fields(doctype: str, name: str, values: dict[str, Any], update_modified: bool = False) -> None:
+	"""Set only those fields that actually exist on the DocType."""
+
+	if not values:
+		return
+
+	meta = frappe.get_meta(doctype)
+	valid_values = {field: val for field, val in values.items() if meta.has_field(field)}
+
+	if not valid_values:
+		return
+
+	frappe.db.set_value(doctype, name, valid_values, update_modified=update_modified)
 
 
 def _refresh_address_docs(customer: ShopifyCustomer, shopify_customer: dict[str, Any], order: dict[str, Any]) -> None:
