@@ -181,9 +181,13 @@ override_whitelisted_methods = {
 try:
 	from ecommerce_integrations.shopify import order as _base_shopify_order
 	from ecom_custom.shopify import order_overrides as _order_overrides
+	from ecom_custom.shopify import customer_patch
 
 	_base_shopify_order.sync_sales_order = _order_overrides.sync_sales_order
 	_base_shopify_order._fetch_old_orders = _order_overrides.fetch_old_orders_any
+
+	# Ensure Shopify customers always carry a fiscal code placeholder to satisfy Italian validations.
+	customer_patch.apply()
 except Exception:
 	pass
 #
