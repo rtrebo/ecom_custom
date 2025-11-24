@@ -141,7 +141,10 @@ doc_events = {
 	"Delivery Note": {
 		"before_save": "ecom_custom.shopify.tracking.populate_delivery_note_tracking",
 		"on_submit": "ecom_custom.shopify.tracking.populate_delivery_note_tracking",
-	}
+	},
+	"Sales Invoice": {
+		"before_validate": "ecom_custom.shopify.fiscal.ensure_customer_fiscal_code",
+	},
 }
 
 # Scheduled Tasks
